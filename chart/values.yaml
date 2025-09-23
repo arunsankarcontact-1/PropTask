@@ -1,0 +1,13 @@
+activeColor: blue
+image:
+  repository: tinyapp
+  tag: "1.0.0"
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "250m"
+    memory: "256Mi"
+networkPolicy:
+  enabled: false
