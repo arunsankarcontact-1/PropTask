@@ -1,34 +1,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app-blue
+  name: {{ include "app.fullname" . }}-blue
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: app-blue
+      app: {{ include "app.fullname" . }}-blue
   template:
     metadata:
       labels:
-        app: app-blue
-        color: blue
+        app: {{ include "app.fullname" . }}-blue
     spec:
       containers:
-        - name: app
-          image: "{{ .Values.image.repository }}:blue"
-          ports:
-            - containerPort: 8080
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: 8080
-            initialDelaySeconds: 3
-            periodSeconds: 5
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8080
-            initialDelaySeconds: 5
-            periodSeconds: 10
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+      - name: app
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tagBlue }}"
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        resources:
+{{- toYaml .Values.resources | nindent 10 }}
