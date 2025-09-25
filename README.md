@@ -32,3 +32,21 @@ curl http://10.43.238.11/version
 
 #Switch back to activeColor blue
 helm upgrade app ./chart -n demo --set activeColor=blue
+
+
+##Readiness and Liveness probe failure steps
+
+helm upgrade app -n demo ./chart   --set readinessProbe.httpGet.path=/Wronghealth   --set livenessProbe.httpGet.path=/Wronghealth
+
+#The new pods created will fail, old pods remain unaffected due to rolling update mechanism.Hence, these replica sets needs to be reduced to 0 to test the health check failures.
+
+sudo kubectl scale rs app-blue-86d5df5d9b -n demo --replicas=0
+sudo kubectl scale rs app-green-577cd4ff6b -n demo --replicas=0
+
+
+#verification
+curl http://10.43.238.11/health
+
+#Revert health check path and verify
+
+helm upgrade app -n demo ./chart   --set readinessProbe.httpGet.path=/health   --set livenessProbe.httpGet.path=/health
