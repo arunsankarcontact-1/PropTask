@@ -19,15 +19,15 @@ spec:
         - containerPort: 8080
         readinessProbe:
           httpGet:
-            path: /health
+            path: {{ .Values.readinessProbe.httpGet.path }}
             port: 8080
-          initialDelaySeconds: 5
-          periodSeconds: 5
+          initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
         livenessProbe:
           httpGet:
-            path: /health
+            path: {{ .Values.livenessProbe.httpGet.path }}
             port: 8080
-          initialDelaySeconds: 10
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
         resources:
 {{- toYaml .Values.resources | nindent 10 }}

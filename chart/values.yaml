@@ -15,3 +15,15 @@ resources:
 
 networkPolicy:
   enabled: false
+
+readinessProbe:
+  httpGet:
+    path: /health
+  initialDelaySeconds: 5
+  periodSeconds: 5
+
+livenessProbe:
+  httpGet:
+    path: /health
+  initialDelaySeconds: 10
+  periodSeconds: 10
