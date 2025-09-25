@@ -1,0 +1,17 @@
+activeColor: blue
+
+image:
+  repository: aruns14/appbluegreen
+  tagBlue: "blue-1.0.0"
+  tagGreen: "green-1.0.0"
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "250m"
+    memory: "256Mi"
+
+networkPolicy:
+  enabled: false

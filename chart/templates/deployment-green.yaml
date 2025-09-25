@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "app.fullname" . }}-green
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "app.fullname" . }}-green
+  template:
+    metadata:
+      labels:
+        app: {{ include "app.fullname" . }}-green
+    spec:
+      containers:
+      - name: app
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tagGreen }}"
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        resources:
+{{- toYaml .Values.resources | nindent 10 }}
