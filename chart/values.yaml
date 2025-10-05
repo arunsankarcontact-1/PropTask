@@ -14,7 +14,7 @@ resources:
     memory: "256Mi"
 
 networkPolicy:
-  enabled: false
+  enabled: true
 
 readinessProbe:
   httpGet:
