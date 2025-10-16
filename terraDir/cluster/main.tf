@@ -33,7 +33,7 @@ resource "aws_iam_role" "ssm_role" {
 
 resource "aws_iam_role_policy_attachment" "ssm_attach" {
   role       = aws_iam_role.ssm_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMFullAccess"
 }
 
 # -----------------------------
@@ -113,12 +113,31 @@ resource "aws_instance" "master" {
               echo "deb https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /" > /etc/apt/sources.list.d/kubernetes.list
               apt-get update -y
               apt-get install -y kubelet kubeadm kubectl containerd awscli
+              apt install -y net-tools
+              sudo swapoff -a
+              sudo sed -i '/ swap / s/^/#/' /etc/fstab
+              sudo modprobe br_netfilter
+              sudo sysctl -w net.bridge.bridge-nf-call-iptables=1
+              sudo sysctl -w net.ipv4.ip_forward=1
+              sudo systemctl restart containerd
+              sudo systemctl enable containerd
               systemctl enable kubelet
 
               kubeadm init --pod-network-cidr=10.244.0.0/16 --kubernetes-version=1.29.0 | tee /root/kubeadm-init.out
 
               mkdir -p /root/.kube
               cp /etc/kubernetes/admin.conf /root/.kube/config
+
+              # INSERT WAIT for kubeapi and CoreDNS until available
+              wait_for_apiserver() {
+              echo "Starting wait loop for Kubernetes API Server (https://127.0.0.1:6443)..."
+              until $(curl --output /dev/null --silent --fail https://127.0.0.1:6443/healthz --insecure); do
+              printf '.'
+              sleep 5
+              done
+              echo -e "\nKubernetes API Server is ready!"
+              }
+              wait_for_apiserver
 
               # Install flannel CNI
               kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml --kubeconfig /etc/kubernetes/admin.conf
@@ -151,6 +170,13 @@ resource "aws_instance" "worker" {
               echo "deb https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /" > /etc/apt/sources.list.d/kubernetes.list
               apt-get update -y
               apt-get install -y kubelet kubeadm kubectl containerd awscli
+              sudo swapoff -a
+              sudo sed -i '/ swap / s/^/#/' /etc/fstab
+              sudo modprobe br_netfilter
+              sudo sysctl -w net.bridge.bridge-nf-call-iptables=1
+              sudo sysctl -w net.ipv4.ip_forward=1
+              sudo systemctl restart containerd
+              sudo systemctl enable containerd
               systemctl enable kubelet
 
               # Fetch join command from SSM
