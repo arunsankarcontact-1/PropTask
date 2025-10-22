@@ -143,7 +143,7 @@ resource "aws_instance" "master" {
               kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml --kubeconfig /etc/kubernetes/admin.conf
 
               # Extract join command and save to SSM
-              JOIN_CMD=$(grep -A2 "kubeadm join" /root/kubeadm-init.out | tail -n3 | tr -d '\\')
+              JOIN_CMD=$(grep -A2 "kubeadm join" /root/kubeadm-init.out | tail -n3 | tr -d '\\\n\t')
               aws ssm put-parameter --name "k8s-join-cmd" --type "String" --overwrite --value "$JOIN_CMD" --region us-west-2
               EOF
 
@@ -185,6 +185,7 @@ resource "aws_instance" "worker" {
                 sleep 10
               done
               bash /root/join.sh
+              aws ssm delete-parameter --name "k8s-join-cmd" --region us-west-2
               EOF
 
   tags = {
